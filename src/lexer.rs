@@ -1,4 +1,5 @@
 use crate::token::Token;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct Lexer<'a> {
@@ -6,6 +7,21 @@ pub struct Lexer<'a> {
     cur: char,
     peek: char,
 }
+
+#[derive(Debug)]
+pub enum LexerError {
+    InvalidInput(char),
+}
+
+impl fmt::Display for LexerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "found invalid value: {}", self)
+    }
+}
+
+impl std::error::Error for LexerError {}
+
+type LexerResult = std::result::Result<Token, LexerError>;
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
@@ -26,7 +42,7 @@ impl<'a> Lexer<'a> {
         c
     }
 
-    pub fn nextToken(&mut self) -> Option<Token> {
+    pub fn nextToken(&mut self) -> LexerResult {
         let ch = self.cur;
         let token = match ch {
             '+' => Token::Plus,
@@ -43,12 +59,12 @@ impl<'a> Lexer<'a> {
                     num.push(b);
                     Token::Num(num.parse().unwrap())
                 } else {
-                    return None;
+                    return Err(LexerError::InvalidInput(b));
                 }
             }
         };
         self.readChar();
-        Some(token)
+        Ok(token)
     }
 }
 
@@ -58,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_add() {
-        let input = "1+1";
+        let input = "1 + 1";
         let mut l = Lexer::new(input);
         assert_eq!(l.nextToken().unwrap(), Token::Num(1));
         assert_eq!(l.nextToken().unwrap(), Token::Plus);
