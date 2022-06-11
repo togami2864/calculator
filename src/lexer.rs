@@ -43,6 +43,7 @@ impl<'a> Lexer<'a> {
     }
 
     pub fn next_token(&mut self) -> LexerResult {
+        self.skip_whitespace();
         let ch = self.cur;
         let token = match ch {
             '+' => Token::Plus,
@@ -66,6 +67,12 @@ impl<'a> Lexer<'a> {
         self.read_char();
         Ok(token)
     }
+
+    fn skip_whitespace(&mut self) {
+        while self.cur.is_whitespace() {
+            self.read_char();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -83,7 +90,7 @@ mod tests {
 
     #[test]
     fn test_minus() {
-        let input = "1-1";
+        let input = "1 - 1";
         let mut l = Lexer::new(input);
         assert_eq!(l.next_token().unwrap(), Token::Num(1));
         assert_eq!(l.next_token().unwrap(), Token::Minus);
@@ -92,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_asterisk() {
-        let input = "1*1";
+        let input = "1 * 1";
         let mut l = Lexer::new(input);
         assert_eq!(l.next_token().unwrap(), Token::Num(1));
         assert_eq!(l.next_token().unwrap(), Token::Asterisk);
@@ -101,10 +108,18 @@ mod tests {
 
     #[test]
     fn test_slash() {
-        let input = "1/1";
+        let input = "1 / 1";
         let mut l = Lexer::new(input);
         assert_eq!(l.next_token().unwrap(), Token::Num(1));
         assert_eq!(l.next_token().unwrap(), Token::Slash);
         assert_eq!(l.next_token().unwrap(), Token::Num(1));
+    }
+
+    #[test]
+    fn test_paren() {
+        let input = "()";
+        let mut l = Lexer::new(input);
+        assert_eq!(l.next_token().unwrap(), Token::LParen);
+        assert_eq!(l.next_token().unwrap(), Token::RParen);
     }
 }
