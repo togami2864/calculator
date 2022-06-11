@@ -20,10 +20,11 @@ fn main() {
         prompt("> ").unwrap();
         if let Some(Ok(line)) = lines.next() {
             let mut l = Lexer::new(line.as_str());
-            while let Ok(token) = l.nextToken() {
-                println!("{:?}", token);
-                if token == Token::Eof {
-                    break;
+            loop {
+                let token = l.next_token().unwrap();
+                match token {
+                    Token::Eof => break,
+                    token => println!("{}", token),
                 }
             }
         }
