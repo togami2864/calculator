@@ -1,5 +1,7 @@
 use std::io::Result;
 
+use calculator::{lexer::Lexer, token::Token};
+
 fn prompt(s: &str) -> Result<()> {
     use std::io::{stdout, Write};
     let stdout = stdout();
@@ -17,8 +19,13 @@ fn main() {
     loop {
         prompt("> ").unwrap();
         if let Some(Ok(line)) = lines.next() {
-            let v: Vec<_> = line.chars().collect();
-            dbg!(v);
+            let mut l = Lexer::new(line.as_str());
+            while let Some(token) = l.nextToken() {
+                println!("{:?}", token);
+                if token == Token::Eof {
+                    break;
+                }
+            }
         }
     }
 }
