@@ -1,7 +1,7 @@
 use crate::token::Token;
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Lexer<'a> {
     input: std::str::Chars<'a>,
     cur: char,

@@ -8,6 +8,7 @@ pub enum Token {
     Slash,
     LParen,
     RParen,
+    Illegal,
     Eof,
 }
 
@@ -20,8 +21,9 @@ impl fmt::Display for Token {
             Token::Slash => f.write_str("/"),
             Token::LParen => f.write_str("("),
             Token::RParen => f.write_str(")"),
-            Token::Eof => f.write_str("EOF"),
             Token::Num(n) => write!(f, "{}", n),
+            Token::Illegal => f.write_str("Illegal"),
+            Token::Eof => f.write_str("EOF"),
         }
     }
 }
