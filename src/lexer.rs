@@ -57,11 +57,38 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_lexer() {
+    fn test_add() {
         let input = "1+1";
         let mut l = Lexer::new(input);
         assert_eq!(l.nextToken().unwrap(), Token::Num(1));
         assert_eq!(l.nextToken().unwrap(), Token::Plus);
+        assert_eq!(l.nextToken().unwrap(), Token::Num(1));
+    }
+
+    #[test]
+    fn test_minus() {
+        let input = "1-1";
+        let mut l = Lexer::new(input);
+        assert_eq!(l.nextToken().unwrap(), Token::Num(1));
+        assert_eq!(l.nextToken().unwrap(), Token::Minus);
+        assert_eq!(l.nextToken().unwrap(), Token::Num(1));
+    }
+
+    #[test]
+    fn test_asterisk() {
+        let input = "1*1";
+        let mut l = Lexer::new(input);
+        assert_eq!(l.nextToken().unwrap(), Token::Num(1));
+        assert_eq!(l.nextToken().unwrap(), Token::Asterisk);
+        assert_eq!(l.nextToken().unwrap(), Token::Num(1));
+    }
+
+    #[test]
+    fn test_slash() {
+        let input = "1/1";
+        let mut l = Lexer::new(input);
+        assert_eq!(l.nextToken().unwrap(), Token::Num(1));
+        assert_eq!(l.nextToken().unwrap(), Token::Slash);
         assert_eq!(l.nextToken().unwrap(), Token::Num(1));
     }
 }
