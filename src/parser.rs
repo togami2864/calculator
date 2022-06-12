@@ -3,6 +3,27 @@ use crate::{
     lexer::Lexer,
     token::Token,
 };
+use std::fmt;
+#[derive(Debug)]
+pub enum ParserError {
+    UnexpectedToken(Token, Token),
+}
+
+impl fmt::Display for ParserError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ParserError::UnexpectedToken(expected, token) => {
+                write!(
+                    f,
+                    "Unexpected Token: expected '{}', but got '{}'",
+                    expected, token
+                )
+            }
+        }
+    }
+}
+
+type ParserResult = Result<Ast, ParserError>;
 
 #[derive(Debug, Clone)]
 pub struct Parser<'a> {
@@ -30,48 +51,48 @@ impl<'a> Parser<'a> {
         cur
     }
 
-    pub fn parse_expr(&mut self) -> Ast {
-        let left = self.parse_mul();
+    pub fn parse_expr(&mut self) -> ParserResult {
+        let left = self.parse_mul()?;
         let op = match self.cur_token {
             Token::Plus => Operator::Plus,
             Token::Minus => Operator::Minus,
-            _ => return left,
+            _ => return Ok(left),
         };
         self.next_token();
-        let right = self.parse_mul();
-        Ast::BinOp {
+        let right = self.parse_mul()?;
+        Ok(Ast::BinOp {
             op,
             l: Box::new(left),
             r: Box::new(right),
-        }
+        })
     }
 
-    fn parse_mul(&mut self) -> Ast {
-        let left = self.parse_primary();
+    fn parse_mul(&mut self) -> ParserResult {
+        let left = self.parse_primary()?;
         self.next_token();
         let op = match self.cur_token {
             Token::Asterisk => Operator::Asterisk,
             Token::Slash => Operator::Slash,
-            _ => return left,
+            _ => return Ok(left),
         };
         self.next_token();
-        let right = self.parse_primary();
-        Ast::BinOp {
+        let right = self.parse_primary()?;
+        Ok(Ast::BinOp {
             op,
             l: Box::new(left),
             r: Box::new(right),
-        }
+        })
     }
 
-    fn parse_primary(&mut self) -> Ast {
+    fn parse_primary(&mut self) -> ParserResult {
         match self.cur_token {
-            Token::Num(n) => Ast::Num(n),
+            Token::Num(n) => Ok(Ast::Num(n)),
             Token::LParen => {
                 self.next_token();
-                let expr = self.parse_expr();
-                match self.cur_token {
-                    Token::RParen => expr,
-                    _ => unimplemented!(),
+                let expr = self.parse_expr()?;
+                match self.cur_token.clone() {
+                    Token::RParen => Ok(expr),
+                    unexpected => Err(ParserError::UnexpectedToken(Token::RParen, unexpected)),
                 }
             }
             _ => unimplemented!(),
@@ -88,7 +109,7 @@ mod tests {
         let l = Lexer::new(input);
         let mut p = Parser::new(l);
         assert_eq!(
-            p.parse_expr(),
+            p.parse_expr().unwrap(),
             Ast::BinOp {
                 l: Box::new(Ast::Num(1)),
                 op: Operator::Plus,
@@ -103,7 +124,7 @@ mod tests {
         let l = Lexer::new(input);
         let mut p = Parser::new(l);
         assert_eq!(
-            p.parse_expr(),
+            p.parse_expr().unwrap(),
             Ast::BinOp {
                 l: Box::new(Ast::Num(1)),
                 op: Operator::Minus,
@@ -118,7 +139,7 @@ mod tests {
         let l = Lexer::new(input);
         let mut p = Parser::new(l);
         assert_eq!(
-            p.parse_expr(),
+            p.parse_expr().unwrap(),
             Ast::BinOp {
                 l: Box::new(Ast::Num(1)),
                 op: Operator::Asterisk,
@@ -133,7 +154,7 @@ mod tests {
         let l = Lexer::new(input);
         let mut p = Parser::new(l);
         assert_eq!(
-            p.parse_expr(),
+            p.parse_expr().unwrap(),
             Ast::BinOp {
                 l: Box::new(Ast::Num(4)),
                 op: Operator::Slash,
@@ -147,7 +168,7 @@ mod tests {
         let l = Lexer::new(input);
         let mut p = Parser::new(l);
         assert_eq!(
-            p.parse_expr(),
+            p.parse_expr().unwrap(),
             Ast::BinOp {
                 l: Box::new(Ast::BinOp {
                     op: Operator::Plus,
