@@ -45,43 +45,70 @@ impl<'a> Parser<'a> {
     }
 
     pub fn next_token(&mut self) -> Token {
-        let cur = self.cur_token.clone();
         self.cur_token = self.peek_token.clone();
         self.peek_token = self.lexer.next_token().unwrap();
-        cur
+        self.cur_token.clone()
     }
 
     pub fn parse_expr(&mut self) -> ParserResult {
-        let left = self.parse_mul()?;
-        let op = match self.cur_token {
-            Token::Plus => Operator::Plus,
-            Token::Minus => Operator::Minus,
-            _ => return Ok(left),
-        };
-        self.next_token();
-        let right = self.parse_mul()?;
-        Ok(Ast::BinOp {
-            op,
-            l: Box::new(left),
-            r: Box::new(right),
-        })
+        let mut left = self.parse_mul()?;
+        loop {
+            match self.cur_token {
+                Token::Plus => {
+                    let op = Operator::Plus;
+                    self.next_token();
+                    let right = self.parse_mul()?;
+                    left = Ast::BinOp {
+                        op,
+                        l: Box::new(left),
+                        r: Box::new(right),
+                    };
+                }
+                Token::Minus => {
+                    let op = Operator::Minus;
+                    self.next_token();
+                    let right = self.parse_mul()?;
+                    left = Ast::BinOp {
+                        op,
+                        l: Box::new(left),
+                        r: Box::new(right),
+                    };
+                }
+                _ => break,
+            }
+        }
+        Ok(left)
     }
 
     fn parse_mul(&mut self) -> ParserResult {
-        let left = self.parse_primary()?;
-        self.next_token();
-        let op = match self.cur_token {
-            Token::Asterisk => Operator::Asterisk,
-            Token::Slash => Operator::Slash,
-            _ => return Ok(left),
-        };
-        self.next_token();
-        let right = self.parse_primary()?;
-        Ok(Ast::BinOp {
-            op,
-            l: Box::new(left),
-            r: Box::new(right),
-        })
+        let mut left = self.parse_primary()?;
+        loop {
+            match self.next_token() {
+                Token::Asterisk => {
+                    let op = Operator::Asterisk;
+                    self.next_token();
+                    let right = self.parse_primary()?;
+                    dbg!(&left);
+                    left = Ast::BinOp {
+                        op,
+                        l: Box::new(left),
+                        r: Box::new(right),
+                    };
+                }
+                Token::Slash => {
+                    let op = Operator::Slash;
+                    self.next_token();
+                    let right = self.parse_primary()?;
+                    left = Ast::BinOp {
+                        op,
+                        l: Box::new(left),
+                        r: Box::new(right),
+                    };
+                }
+                _ => break,
+            }
+        }
+        Ok(left)
     }
 
     fn parse_primary(&mut self) -> ParserResult {

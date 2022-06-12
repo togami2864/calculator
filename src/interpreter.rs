@@ -89,11 +89,11 @@ mod tests {
 
     #[test]
     fn test_paren() {
-        let input = "5 * (1 + 1)";
+        let input = "5 * (1 + 1) * 5";
         let l = Lexer::new(input);
         let mut p = Parser::new(l);
         let ast = p.parse_expr().unwrap();
         let mut i = Interpreter::new();
-        assert_eq!(i.eval(ast).unwrap(), 10);
+        assert_eq!(i.eval(ast).unwrap(), 50);
     }
 }
