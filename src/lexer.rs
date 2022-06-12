@@ -53,12 +53,9 @@ impl<'a> Lexer<'a> {
             '(' => Token::LParen,
             ')' => Token::RParen,
             '\u{0}' => Token::Eof,
-
             b => {
                 if b.is_digit(10) {
-                    let mut num = String::new();
-                    num.push(b);
-                    Token::Num(num.parse().unwrap())
+                    return Ok(self.parse_number());
                 } else {
                     return Err(LexerError::InvalidInput(b));
                 }
@@ -72,6 +69,15 @@ impl<'a> Lexer<'a> {
         while self.cur.is_whitespace() {
             self.read_char();
         }
+    }
+
+    fn parse_number(&mut self) -> Token {
+        let mut number = String::new();
+        while self.cur.is_digit(10) {
+            number.push(self.cur);
+            self.read_char();
+        }
+        Token::Num(number.parse().unwrap())
     }
 }
 
@@ -117,9 +123,25 @@ mod tests {
 
     #[test]
     fn test_paren() {
-        let input = "()";
+        let input = "5 * (1 + 1) * 5";
         let mut l = Lexer::new(input);
+        assert_eq!(l.next_token().unwrap(), Token::Num(5));
+        assert_eq!(l.next_token().unwrap(), Token::Asterisk);
         assert_eq!(l.next_token().unwrap(), Token::LParen);
+        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Plus);
+        assert_eq!(l.next_token().unwrap(), Token::Num(1));
         assert_eq!(l.next_token().unwrap(), Token::RParen);
+        assert_eq!(l.next_token().unwrap(), Token::Asterisk);
+        assert_eq!(l.next_token().unwrap(), Token::Num(5));
+    }
+
+    #[test]
+    fn test_multiple_number() {
+        let input = "10  + 10";
+        let mut l = Lexer::new(input);
+        assert_eq!(l.next_token().unwrap(), Token::Num(10));
+        assert_eq!(l.next_token().unwrap(), Token::Plus);
+        assert_eq!(l.next_token().unwrap(), Token::Num(10));
     }
 }

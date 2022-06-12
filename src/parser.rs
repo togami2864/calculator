@@ -206,4 +206,19 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn test_multiple_number() {
+        let input = "10 + 10";
+        let l = Lexer::new(input);
+        let mut p = Parser::new(l);
+        assert_eq!(
+            p.parse_expr().unwrap(),
+            Ast::BinOp {
+                l: Box::new(Ast::Num(10)),
+                op: Operator::Plus,
+                r: Box::new(Ast::Num(10))
+            }
+        );
+    }
 }
