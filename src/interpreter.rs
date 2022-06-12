@@ -5,7 +5,7 @@ pub enum InterpreterError {
     DivisionByZero,
 }
 
-type InterpreterResult = Result<u64, InterpreterError>;
+type InterpreterResult = Result<i64, InterpreterError>;
 
 #[derive(Debug, Default)]
 pub struct Interpreter;
@@ -17,7 +17,7 @@ impl Interpreter {
 
     pub fn eval(&mut self, expr: Ast) -> InterpreterResult {
         match expr {
-            Ast::Num(n) => Ok(n as u64),
+            Ast::Num(n) => Ok(n as i64),
             Ast::BinOp { op, l, r } => {
                 let l = self.eval(*l)?;
                 let r = self.eval(*r)?;
@@ -26,7 +26,7 @@ impl Interpreter {
         }
     }
 
-    fn eval_binop(&mut self, l: u64, r: u64, op: Operator) -> InterpreterResult {
+    fn eval_binop(&mut self, l: i64, r: i64, op: Operator) -> InterpreterResult {
         let res = match op {
             Operator::Plus => l + r,
             Operator::Minus => l - r,
@@ -95,5 +95,15 @@ mod tests {
         let ast = p.parse_expr().unwrap();
         let mut i = Interpreter::new();
         assert_eq!(i.eval(ast).unwrap(), 50);
+    }
+
+    #[test]
+    fn test_minus() {
+        let input = "1 - 5";
+        let l = Lexer::new(input);
+        let mut p = Parser::new(l);
+        let ast = p.parse_expr().unwrap();
+        let mut i = Interpreter::new();
+        assert_eq!(i.eval(ast).unwrap(), -4);
     }
 }

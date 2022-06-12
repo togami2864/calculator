@@ -88,7 +88,6 @@ impl<'a> Parser<'a> {
                     let op = Operator::Asterisk;
                     self.next_token();
                     let right = self.parse_primary()?;
-                    dbg!(&left);
                     left = Ast::BinOp {
                         op,
                         l: Box::new(left),

@@ -9,7 +9,7 @@ pub enum Ast {
         l: Box<Ast>,
         r: Box<Ast>,
     },
-    Num(u64),
+    Num(i64),
 }
 
 #[derive(Debug, Clone, PartialEq)]
