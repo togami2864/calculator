@@ -12,7 +12,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    fn new(lexer: Lexer<'a>) -> Self {
+    pub fn new(lexer: Lexer<'a>) -> Self {
         let mut parser = Self {
             lexer,
             cur_token: Token::Illegal,
@@ -30,7 +30,7 @@ impl<'a> Parser<'a> {
         cur
     }
 
-    fn parse_expr(&mut self) -> Ast {
+    pub fn parse_expr(&mut self) -> Ast {
         let left = self.parse_mul();
         let op = match self.cur_token {
             Token::Plus => Operator::Plus,
