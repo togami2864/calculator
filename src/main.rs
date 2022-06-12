@@ -1,6 +1,6 @@
 use std::io::Result;
 
-use calculator::{lexer::Lexer, parser::Parser};
+use calculator::{interpreter::Interpreter, lexer::Lexer, parser::Parser};
 
 fn prompt(s: &str) -> Result<()> {
     use std::io::{stdout, Write};
@@ -21,8 +21,10 @@ fn main() {
         if let Some(Ok(line)) = lines.next() {
             let l = Lexer::new(line.as_str());
             let mut p = Parser::new(l);
-            let ast = p.parse_expr();
-            println!("{:?}", ast);
+            let ast = p.parse_expr().unwrap();
+            println!("{:?}", &ast);
+            let mut i = Interpreter::new();
+            println!("{:?}", i.eval(ast).unwrap());
         }
     }
 }
