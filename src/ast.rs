@@ -1,5 +1,6 @@
 /// expr = mul ("+" mul | "-" mul)*
-/// mul = primary ("*" primary | "/" primary)*
+/// mul = unary ("*" unary | "/" unary)*
+/// unary = ("+"|"-")? primary
 /// primary = num | "(" expr ")"
 
 #[derive(Debug, Clone, PartialEq)]
@@ -7,6 +8,10 @@ pub enum Ast {
     BinOp {
         op: Operator,
         l: Box<Ast>,
+        r: Box<Ast>,
+    },
+    Unary {
+        op: UnaryOperator,
         r: Box<Ast>,
     },
     Num(i64),
@@ -18,4 +23,10 @@ pub enum Operator {
     Minus,
     Asterisk,
     Slash,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum UnaryOperator {
+    Plus,
+    Minus,
 }

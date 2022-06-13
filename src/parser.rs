@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Ast, Operator},
+    ast::{Ast, Operator, UnaryOperator},
     lexer::Lexer,
     token::Token,
 };
@@ -81,13 +81,13 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_mul(&mut self) -> ParserResult {
-        let mut left = self.parse_primary()?;
+        let mut left = self.parse_unary()?;
         loop {
             match self.next_token() {
                 Token::Asterisk => {
                     let op = Operator::Asterisk;
                     self.next_token();
-                    let right = self.parse_primary()?;
+                    let right = self.parse_unary()?;
                     left = Ast::BinOp {
                         op,
                         l: Box::new(left),
@@ -97,7 +97,7 @@ impl<'a> Parser<'a> {
                 Token::Slash => {
                     let op = Operator::Slash;
                     self.next_token();
-                    let right = self.parse_primary()?;
+                    let right = self.parse_unary()?;
                     left = Ast::BinOp {
                         op,
                         l: Box::new(left),
@@ -108,6 +108,27 @@ impl<'a> Parser<'a> {
             }
         }
         Ok(left)
+    }
+
+    fn parse_unary(&mut self) -> ParserResult {
+        let num = match self.cur_token {
+            Token::Minus => {
+                self.next_token();
+                let r = self.parse_primary()?;
+                Ast::Unary {
+                    op: UnaryOperator::Minus,
+                    r: Box::new(r),
+                }
+            }
+            _ => {
+                let r = self.parse_primary()?;
+                Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(r),
+                }
+            }
+        };
+        Ok(num)
     }
 
     fn parse_primary(&mut self) -> ParserResult {
@@ -137,9 +158,15 @@ mod tests {
         assert_eq!(
             p.parse_expr().unwrap(),
             Ast::BinOp {
-                l: Box::new(Ast::Num(1)),
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(1))
+                }),
                 op: Operator::Plus,
-                r: Box::new(Ast::Num(1))
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(1))
+                }),
             }
         );
     }
@@ -152,9 +179,15 @@ mod tests {
         assert_eq!(
             p.parse_expr().unwrap(),
             Ast::BinOp {
-                l: Box::new(Ast::Num(1)),
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(1))
+                }),
                 op: Operator::Minus,
-                r: Box::new(Ast::Num(1))
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(1))
+                })
             }
         );
     }
@@ -167,9 +200,15 @@ mod tests {
         assert_eq!(
             p.parse_expr().unwrap(),
             Ast::BinOp {
-                l: Box::new(Ast::Num(1)),
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(1))
+                }),
                 op: Operator::Asterisk,
-                r: Box::new(Ast::Num(4))
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(4))
+                })
             }
         );
     }
@@ -182,9 +221,15 @@ mod tests {
         assert_eq!(
             p.parse_expr().unwrap(),
             Ast::BinOp {
-                l: Box::new(Ast::Num(4)),
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(4))
+                }),
                 op: Operator::Slash,
-                r: Box::new(Ast::Num(2))
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(2))
+                })
             }
         );
     }
@@ -196,13 +241,25 @@ mod tests {
         assert_eq!(
             p.parse_expr().unwrap(),
             Ast::BinOp {
-                l: Box::new(Ast::BinOp {
-                    op: Operator::Plus,
-                    l: Box::new(Ast::Num(1)),
-                    r: Box::new(Ast::Num(3))
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::BinOp {
+                        op: Operator::Plus,
+                        l: Box::new(Ast::Unary {
+                            op: UnaryOperator::Plus,
+                            r: Box::new(Ast::Num(1))
+                        }),
+                        r: Box::new(Ast::Unary {
+                            op: UnaryOperator::Plus,
+                            r: Box::new(Ast::Num(3))
+                        })
+                    })
                 }),
                 op: Operator::Asterisk,
-                r: Box::new(Ast::Num(2))
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(2))
+                })
             }
         );
     }
@@ -215,9 +272,36 @@ mod tests {
         assert_eq!(
             p.parse_expr().unwrap(),
             Ast::BinOp {
-                l: Box::new(Ast::Num(10)),
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(10))
+                }),
                 op: Operator::Plus,
-                r: Box::new(Ast::Num(10))
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(10))
+                })
+            }
+        );
+    }
+
+    #[test]
+    fn test_unary() {
+        let input = "1 - -1";
+        let l = Lexer::new(input);
+        let mut p = Parser::new(l);
+        assert_eq!(
+            p.parse_expr().unwrap(),
+            Ast::BinOp {
+                l: Box::new(Ast::Unary {
+                    op: UnaryOperator::Plus,
+                    r: Box::new(Ast::Num(1))
+                }),
+                op: Operator::Minus,
+                r: Box::new(Ast::Unary {
+                    op: UnaryOperator::Minus,
+                    r: Box::new(Ast::Num(1))
+                })
             }
         );
     }

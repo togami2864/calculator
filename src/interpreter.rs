@@ -1,4 +1,4 @@
-use crate::ast::{Ast, Operator};
+use crate::ast::{Ast, Operator, UnaryOperator};
 
 #[derive(Debug, Clone)]
 pub enum InterpreterError {
@@ -18,6 +18,13 @@ impl Interpreter {
     pub fn eval(&mut self, expr: Ast) -> InterpreterResult {
         match expr {
             Ast::Num(n) => Ok(n as i64),
+            Ast::Unary { op, r } => {
+                let r = self.eval(*r)?;
+                match op {
+                    UnaryOperator::Minus => Ok(0 - r),
+                    UnaryOperator::Plus => Ok(r),
+                }
+            }
             Ast::BinOp { op, l, r } => {
                 let l = self.eval(*l)?;
                 let r = self.eval(*r)?;
@@ -105,5 +112,15 @@ mod tests {
         let ast = p.parse_expr().unwrap();
         let mut i = Interpreter::new();
         assert_eq!(i.eval(ast).unwrap(), -4);
+    }
+
+    #[test]
+    fn test_unary() {
+        let input = "1 - -5";
+        let l = Lexer::new(input);
+        let mut p = Parser::new(l);
+        let ast = p.parse_expr().unwrap();
+        let mut i = Interpreter::new();
+        assert_eq!(i.eval(ast).unwrap(), 6);
     }
 }
