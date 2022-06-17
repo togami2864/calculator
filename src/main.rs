@@ -21,10 +21,17 @@ fn main() {
         if let Some(Ok(line)) = lines.next() {
             let l = Lexer::new(line.as_str());
             let mut p = Parser::new(l);
-            let ast = p.parse_expr().unwrap();
-            println!("{:?}", &ast);
-            let mut i = Interpreter::new();
-            println!("{:?}", i.eval(ast).unwrap());
+            match p.parse_expr() {
+                Ok(ast) => {
+                    println!("{:?}", &ast);
+                    let mut i = Interpreter::new();
+                    match i.eval(ast) {
+                        Ok(val) => println!("{:?}", val),
+                        Err(err) => println!("{}", err),
+                    }
+                }
+                Err(err) => println!("{}", err),
+            };
         }
     }
 }

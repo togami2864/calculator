@@ -1,5 +1,5 @@
+use crate::error::{CalcError, Result};
 use crate::token::Token;
-use std::fmt;
 
 #[derive(Debug, Clone)]
 pub struct Lexer<'a> {
@@ -7,21 +7,6 @@ pub struct Lexer<'a> {
     cur: char,
     peek: char,
 }
-
-#[derive(Debug)]
-pub enum LexerError {
-    InvalidInput(char),
-}
-
-impl fmt::Display for LexerError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "found invalid value: {}", self)
-    }
-}
-
-impl std::error::Error for LexerError {}
-
-type LexerResult = std::result::Result<Token, LexerError>;
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
@@ -42,7 +27,7 @@ impl<'a> Lexer<'a> {
         c
     }
 
-    pub fn next_token(&mut self) -> LexerResult {
+    pub fn next_token(&mut self) -> Result<Token> {
         self.skip_whitespace();
         let ch = self.cur;
         let token = match ch {
@@ -57,7 +42,7 @@ impl<'a> Lexer<'a> {
                 if b.is_digit(10) {
                     return Ok(self.parse_number());
                 } else {
-                    return Err(LexerError::InvalidInput(b));
+                    return Err(CalcError::InvalidInput(b));
                 }
             }
         };

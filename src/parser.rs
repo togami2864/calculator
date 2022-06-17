@@ -1,29 +1,9 @@
 use crate::{
     ast::{Ast, Operator, UnaryOperator},
+    error::{CalcError, Result},
     lexer::Lexer,
     token::Token,
 };
-use std::fmt;
-#[derive(Debug)]
-pub enum ParserError {
-    UnexpectedToken(Token, Token),
-}
-
-impl fmt::Display for ParserError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ParserError::UnexpectedToken(expected, token) => {
-                write!(
-                    f,
-                    "Unexpected Token: expected '{}', but got '{}'",
-                    expected, token
-                )
-            }
-        }
-    }
-}
-
-type ParserResult = Result<Ast, ParserError>;
 
 #[derive(Debug, Clone)]
 pub struct Parser<'a> {
@@ -44,19 +24,19 @@ impl<'a> Parser<'a> {
         parser
     }
 
-    pub fn next_token(&mut self) -> Token {
+    pub fn next_token(&mut self) -> Result<Token> {
         self.cur_token = self.peek_token.clone();
-        self.peek_token = self.lexer.next_token().unwrap();
-        self.cur_token.clone()
+        self.peek_token = self.lexer.next_token()?;
+        Ok(self.cur_token.clone())
     }
 
-    pub fn parse_expr(&mut self) -> ParserResult {
+    pub fn parse_expr(&mut self) -> Result<Ast> {
         let mut left = self.parse_mul()?;
         loop {
             match self.cur_token {
                 Token::Plus => {
                     let op = Operator::Plus;
-                    self.next_token();
+                    self.next_token()?;
                     let right = self.parse_mul()?;
                     left = Ast::BinOp {
                         op,
@@ -66,7 +46,7 @@ impl<'a> Parser<'a> {
                 }
                 Token::Minus => {
                     let op = Operator::Minus;
-                    self.next_token();
+                    self.next_token()?;
                     let right = self.parse_mul()?;
                     left = Ast::BinOp {
                         op,
@@ -80,13 +60,13 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
 
-    fn parse_mul(&mut self) -> ParserResult {
+    fn parse_mul(&mut self) -> Result<Ast> {
         let mut left = self.parse_unary()?;
         loop {
-            match self.next_token() {
+            match self.next_token()? {
                 Token::Asterisk => {
                     let op = Operator::Asterisk;
-                    self.next_token();
+                    self.next_token()?;
                     let right = self.parse_unary()?;
                     left = Ast::BinOp {
                         op,
@@ -96,7 +76,7 @@ impl<'a> Parser<'a> {
                 }
                 Token::Slash => {
                     let op = Operator::Slash;
-                    self.next_token();
+                    self.next_token()?;
                     let right = self.parse_unary()?;
                     left = Ast::BinOp {
                         op,
@@ -110,10 +90,10 @@ impl<'a> Parser<'a> {
         Ok(left)
     }
 
-    fn parse_unary(&mut self) -> ParserResult {
+    fn parse_unary(&mut self) -> Result<Ast> {
         let num = match self.cur_token {
             Token::Minus => {
-                self.next_token();
+                self.next_token()?;
                 let r = self.parse_primary()?;
                 Ast::Unary {
                     op: UnaryOperator::Minus,
@@ -131,18 +111,18 @@ impl<'a> Parser<'a> {
         Ok(num)
     }
 
-    fn parse_primary(&mut self) -> ParserResult {
-        match self.cur_token {
-            Token::Num(n) => Ok(Ast::Num(n)),
+    fn parse_primary(&mut self) -> Result<Ast> {
+        match &self.cur_token {
+            Token::Num(n) => Ok(Ast::Num(*n)),
             Token::LParen => {
-                self.next_token();
+                self.next_token()?;
                 let expr = self.parse_expr()?;
                 match self.cur_token.clone() {
                     Token::RParen => Ok(expr),
-                    unexpected => Err(ParserError::UnexpectedToken(Token::RParen, unexpected)),
+                    unexpected => Err(CalcError::UnexpectedToken(Token::RParen, unexpected)),
                 }
             }
-            _ => unimplemented!(),
+            tok => Err(CalcError::IllegalToken(tok.clone())),
         }
     }
 }

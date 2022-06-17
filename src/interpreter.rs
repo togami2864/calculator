@@ -1,11 +1,5 @@
 use crate::ast::{Ast, Operator, UnaryOperator};
-
-#[derive(Debug, Clone)]
-pub enum InterpreterError {
-    DivisionByZero,
-}
-
-type InterpreterResult = Result<i64, InterpreterError>;
+use crate::error::{CalcError, Result};
 
 #[derive(Debug, Default)]
 pub struct Interpreter;
@@ -15,7 +9,7 @@ impl Interpreter {
         Interpreter
     }
 
-    pub fn eval(&mut self, expr: Ast) -> InterpreterResult {
+    pub fn eval(&mut self, expr: Ast) -> Result<i64> {
         match expr {
             Ast::Num(n) => Ok(n as i64),
             Ast::Unary { op, r } => {
@@ -33,14 +27,14 @@ impl Interpreter {
         }
     }
 
-    fn eval_binop(&mut self, l: i64, r: i64, op: Operator) -> InterpreterResult {
+    fn eval_binop(&mut self, l: i64, r: i64, op: Operator) -> Result<i64> {
         let res = match op {
             Operator::Plus => l + r,
             Operator::Minus => l - r,
             Operator::Asterisk => l * r,
             Operator::Slash => {
                 if r == 0 {
-                    return Err(InterpreterError::DivisionByZero);
+                    return Err(CalcError::DivisionByZero);
                 }
                 l / r
             }
