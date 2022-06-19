@@ -11,7 +11,7 @@ impl Interpreter {
 
     pub fn eval(&mut self, expr: Ast) -> Result<i64> {
         match expr {
-            Ast::Num(n) => Ok(n as i64),
+            Ast::Integer(n) => Ok(n as i64),
             Ast::Unary { op, r } => {
                 let r = self.eval(*r)?;
                 match op {

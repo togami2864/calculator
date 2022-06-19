@@ -62,7 +62,7 @@ impl<'a> Lexer<'a> {
             number.push(self.cur);
             self.read_char();
         }
-        Token::Num(number.parse().unwrap())
+        Token::Integer(number.parse().unwrap())
     }
 }
 
@@ -74,59 +74,59 @@ mod tests {
     fn test_add() {
         let input = "1 + 1";
         let mut l = Lexer::new(input);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
         assert_eq!(l.next_token().unwrap(), Token::Plus);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
     }
 
     #[test]
     fn test_minus() {
         let input = "1 - 1";
         let mut l = Lexer::new(input);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
         assert_eq!(l.next_token().unwrap(), Token::Minus);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
     }
 
     #[test]
     fn test_asterisk() {
         let input = "1 * 1";
         let mut l = Lexer::new(input);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
         assert_eq!(l.next_token().unwrap(), Token::Asterisk);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
     }
 
     #[test]
     fn test_slash() {
         let input = "1 / 1";
         let mut l = Lexer::new(input);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
         assert_eq!(l.next_token().unwrap(), Token::Slash);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
     }
 
     #[test]
     fn test_paren() {
         let input = "5 * (1 + 1) * 5";
         let mut l = Lexer::new(input);
-        assert_eq!(l.next_token().unwrap(), Token::Num(5));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(5));
         assert_eq!(l.next_token().unwrap(), Token::Asterisk);
         assert_eq!(l.next_token().unwrap(), Token::LParen);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
         assert_eq!(l.next_token().unwrap(), Token::Plus);
-        assert_eq!(l.next_token().unwrap(), Token::Num(1));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(1));
         assert_eq!(l.next_token().unwrap(), Token::RParen);
         assert_eq!(l.next_token().unwrap(), Token::Asterisk);
-        assert_eq!(l.next_token().unwrap(), Token::Num(5));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(5));
     }
 
     #[test]
     fn test_multiple_number() {
         let input = "10  + 10";
         let mut l = Lexer::new(input);
-        assert_eq!(l.next_token().unwrap(), Token::Num(10));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(10));
         assert_eq!(l.next_token().unwrap(), Token::Plus);
-        assert_eq!(l.next_token().unwrap(), Token::Num(10));
+        assert_eq!(l.next_token().unwrap(), Token::Integer(10));
     }
 }

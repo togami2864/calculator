@@ -113,7 +113,7 @@ impl<'a> Parser<'a> {
 
     fn parse_primary(&mut self) -> Result<Ast> {
         match &self.cur_token {
-            Token::Num(n) => Ok(Ast::Num(*n)),
+            Token::Integer(n) => Ok(Ast::Integer(*n)),
             Token::LParen => {
                 self.next_token()?;
                 let expr = self.parse_expr()?;
@@ -140,12 +140,12 @@ mod tests {
             Ast::BinOp {
                 l: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 }),
                 op: Operator::Plus,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 }),
             }
         );
@@ -161,12 +161,12 @@ mod tests {
             Ast::BinOp {
                 l: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 }),
                 op: Operator::Minus,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 })
             }
         );
@@ -182,12 +182,12 @@ mod tests {
             Ast::BinOp {
                 l: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 }),
                 op: Operator::Asterisk,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(4))
+                    r: Box::new(Ast::Integer(4))
                 })
             }
         );
@@ -203,12 +203,12 @@ mod tests {
             Ast::BinOp {
                 l: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(4))
+                    r: Box::new(Ast::Integer(4))
                 }),
                 op: Operator::Slash,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(2))
+                    r: Box::new(Ast::Integer(2))
                 })
             }
         );
@@ -227,18 +227,18 @@ mod tests {
                         op: Operator::Plus,
                         l: Box::new(Ast::Unary {
                             op: UnaryOperator::Plus,
-                            r: Box::new(Ast::Num(1))
+                            r: Box::new(Ast::Integer(1))
                         }),
                         r: Box::new(Ast::Unary {
                             op: UnaryOperator::Plus,
-                            r: Box::new(Ast::Num(3))
+                            r: Box::new(Ast::Integer(3))
                         })
                     })
                 }),
                 op: Operator::Asterisk,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(2))
+                    r: Box::new(Ast::Integer(2))
                 })
             }
         );
@@ -254,12 +254,12 @@ mod tests {
             Ast::BinOp {
                 l: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(10))
+                    r: Box::new(Ast::Integer(10))
                 }),
                 op: Operator::Plus,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(10))
+                    r: Box::new(Ast::Integer(10))
                 })
             }
         );
@@ -275,12 +275,12 @@ mod tests {
             Ast::BinOp {
                 l: Box::new(Ast::Unary {
                     op: UnaryOperator::Plus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 }),
                 op: Operator::Minus,
                 r: Box::new(Ast::Unary {
                     op: UnaryOperator::Minus,
-                    r: Box::new(Ast::Num(1))
+                    r: Box::new(Ast::Integer(1))
                 })
             }
         );

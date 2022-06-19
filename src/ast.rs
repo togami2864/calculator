@@ -14,7 +14,7 @@ pub enum Ast {
         op: UnaryOperator,
         r: Box<Ast>,
     },
-    Num(i64),
+    Integer(i64),
 }
 
 #[derive(Debug, Clone, PartialEq)]

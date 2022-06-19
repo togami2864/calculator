@@ -1,7 +1,7 @@
 use std::fmt;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Token {
-    Num(i64),
+    Integer(i64),
     Plus,
     Minus,
     Asterisk,
@@ -21,7 +21,7 @@ impl fmt::Display for Token {
             Token::Slash => f.write_str("/"),
             Token::LParen => f.write_str("("),
             Token::RParen => f.write_str(")"),
-            Token::Num(n) => write!(f, "{}", n),
+            Token::Integer(n) => write!(f, "{}", n),
             Token::Illegal => f.write_str("Illegal"),
             Token::Eof => f.write_str("EOF"),
         }
