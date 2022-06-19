@@ -15,6 +15,7 @@ Also, this is the good theme to exercise a new programming language you're learn
 # Installation
 
 ```
+$ git clone https://github.com/togami2864/calculator.git
 $ cargo build
 $ cargo run
 ```
